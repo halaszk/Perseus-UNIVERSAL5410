@@ -3003,6 +3003,11 @@ static int __devinit dw_mci_init_slot(struct dw_mci *host, unsigned int id)
 	host->slot[id] = slot;
 	mmc_add_host(mmc);
 
+	mmc->clk_scaling.up_threshold = 35;
+	mmc->clk_scaling.down_threshold = 5;
+	mmc->clk_scaling.polling_delay_ms = 100;
+	mmc->caps2 |= MMC_CAP2_CLK_SCALE;
+
 #if defined(CONFIG_DEBUG_FS)
 	dw_mci_init_debugfs(slot);
 #endif
