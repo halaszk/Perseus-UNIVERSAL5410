@@ -574,7 +574,7 @@ int mmc_interrupt_hpi(struct mmc_card *card)
 	}
 
 	mmc_claim_host(card->host);
-	err = mmc_send_status(card, &status, 0);
+	err = mmc_send_status(card, &status);
 	if (err) {
 		pr_err("%s: Get card status fail\n", mmc_hostname(card->host));
 		goto out;
@@ -598,7 +598,7 @@ int mmc_interrupt_hpi(struct mmc_card *card)
 				pr_debug("%s: abort HPI (%d error)\n",
 					 mmc_hostname(card->host), err);
 
-			err = mmc_send_status(card, &status, 0);
+			err = mmc_send_status(card, &status);
 			if (err)
 				break;
 		} while (R1_CURRENT_STATE(status) == R1_STATE_PRG);

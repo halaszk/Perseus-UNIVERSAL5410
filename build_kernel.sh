@@ -13,7 +13,7 @@ export KERNEL_CONFIG="halaszk_defconfig"
 # build script
 export USER=`whoami`
 # gcc 4.7.3 (Linaro 13.02)
-export CROSS_COMPILE=/home/halaszk/android_build/SGS4/perseus/arm-eabi-4.6/bin/arm-eabi-
+export CROSS_COMPILE=/home/dev/KERNEL/arm-eabi-4.6/bin/arm-eabi-
 if [ "${1}" != "" ];then
 export KERNELDIR=`readlink -f ${1}`
 fi
@@ -24,6 +24,7 @@ GCCVERSION_NEW=`${CROSS_COMPILE}gcc --version | cut -d " " -f4 | cut -c1-3 | gre
 
 
 NAMBEROFCPUS=`grep 'processor' /proc/cpuinfo | wc -l`
+echo "$NAMBEROFCPUS system CPU detected, setting $NAMBEROFCPUS build threads"
 
 INITRAMFS_TMP="/tmp/initramfs-source"
 
@@ -38,7 +39,7 @@ fi;
 cd ${KERNELDIR}/
 
 GETVER=`grep 'Perseus-.*-V' .config | sed 's/.*".//g' | sed 's/-S.*//g'`
-nice -n 10 make -j2 || exit 1
+nice -n 10 make -j$NAMBEROFCPUS || exit 1
 
 # remove previous zImage files
 if [ -e ${KERNELDIR}/zImage ]; then
@@ -90,7 +91,7 @@ ${CROSS_COMPILE}strip --strip-debug $INITRAMFS_TMP/lib/modules/*.ko
 chmod 755 $INITRAMFS_TMP/lib/modules/*
 ${CROSS_COMPILE}strip --strip-unneeded $INITRAMFS_TMP/lib/modules/*
 rm -f ${INITRAMFS_TMP}/update*;
-read -p "create new kernel Image LOGO with version & date (y/n)?";
+read -t 5 -p "create new kernel Image LOGO with version & date, 5sec timeout (y/n)?";
 if [ "$REPLY" == "y" ]; then
 # create new image with version & date
 convert -ordered-dither threshold,32,64,32 -pointsize 17 -fill white -draw "text 230,1080 \"${GETVER} [$(date "+%H:%M | %d.%m.%Y"| sed -e ' s/\"/\\\"/g' )]\"" ${INITRAMFS_TMP}/res/images/icon_clockwork.png ${INITRAMFS_TMP}/res/images/icon_clockwork.png;
@@ -105,7 +106,7 @@ gzip -9 $INITRAMFS_TMP.cpio
 cd -
 
 # make kernel
-nice -n 10 make -j2 zImage || exit 1
+nice -n 10 make -j$NAMBEROFCPUS zImage || exit 1
 
 ./mkbootimg --kernel ${KERNELDIR}/arch/arm/boot/zImage --ramdisk $INITRAMFS_TMP.cpio.gz --board universal5410 --base 0x10000000 --pagesize 2048 --ramdiskaddr 0x11000000 -o ${KERNELDIR}/boot.img.pre
 
@@ -124,13 +125,25 @@ cd ${KERNELDIR}/READY/
 rm ${KERNELDIR}/boot.img
 rm ${KERNELDIR}/READY/boot/boot.img
 rm ${KERNELDIR}/READY/.config
+        # push to android
+        ADB_STATUS=`adb get-state`;
+        if [ "$ADB_STATUS" == "device" ]; then
+                read -t 5 -p "push kernel to android, 5sec timeout (y/n)?";
+                if [ "$REPLY" == "y" ]; then
+                        adb push $KERNELDIR/READY/Kernel_*.zip /sdcard/;
+                        read -t 3 -p "reboot to recovery, 3sec timeout (y/n)?";
+                        if [ "$REPLY" == "y" ]; then
+                                adb reboot recovery;
+                        fi;
+                fi;
+        else
                 read -p "push kernel to ftp (y/n)?"
                 if [ "$REPLY" == "y" ]; then
 			echo "Uploading kernel to FTP server";
 			mv ${KERNELDIR}/READY/Kernel_* ${KERNELDIR}/SGS4/
-			ncftpput -f /home/halaszk/login.cfg -V -R / ${KERNELDIR}/SGS4/
+			ncftpput -f /home/dev/login.cfg -V -R / ${KERNELDIR}/SGS4/
 			rm ${KERNELDIR}/SGS4/Kernel_*
 			echo "Uploading kernel to FTP server DONE";
 
                 fi;
-
+fi;

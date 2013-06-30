@@ -1467,7 +1467,7 @@ static void mmc_remove(struct mmc_host *host)
  */
 static int mmc_alive(struct mmc_host *host)
 {
-	return mmc_send_status(host->card, NULL, 0);
+	return mmc_send_status(host->card, NULL);
 }
 
 /*

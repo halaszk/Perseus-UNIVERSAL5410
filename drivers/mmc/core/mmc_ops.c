@@ -405,7 +405,7 @@ int mmc_switch(struct mmc_card *card, u8 set, u8 index, u8 value,
 	ignore = (index == EXT_CSD_HS_TIMING) ? MMC_RSP_CRC : 0;
 
 	do {
-		err = mmc_send_status(card, &status, ignore);
+		err = mmc_send_status(card, &status);
 		if (err)
 			return err;
 		if (card->host->caps & MMC_CAP_WAIT_WHILE_BUSY)
@@ -429,7 +429,7 @@ int mmc_switch(struct mmc_card *card, u8 set, u8 index, u8 value,
 }
 EXPORT_SYMBOL_GPL(mmc_switch);
 
-int mmc_send_status(struct mmc_card *card, u32 *status, unsigned int ignore)
+int mmc_send_status(struct mmc_card *card, u32 *status)
 {
 	int err;
 	struct mmc_command cmd = {0};
@@ -441,7 +441,7 @@ int mmc_send_status(struct mmc_card *card, u32 *status, unsigned int ignore)
 	if (!mmc_host_is_spi(card->host))
 		cmd.arg = card->rca << 16;
 	cmd.flags = MMC_RSP_SPI_R2 | MMC_RSP_R1 | MMC_CMD_AC;
-	cmd.flags &= ~ignore;
+
 
 	err = mmc_wait_for_cmd(card->host, &cmd, MMC_CMD_RETRIES);
 	if (err)
