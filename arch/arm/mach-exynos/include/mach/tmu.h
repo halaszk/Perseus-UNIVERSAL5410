@@ -16,7 +16,7 @@
 #define TMU_SAVE_NUM 10
 #define TMU_DC_VALUE 25
 #define EFUSE_MIN_VALUE 16
-#define EFUSE_MAX_VALUE 96
+#define EFUSE_MAX_VALUE 76
 #define UNUSED_THRESHOLD 0xFF
 
 enum tmu_status_t {
