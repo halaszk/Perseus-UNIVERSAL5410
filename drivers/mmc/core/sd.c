@@ -1413,7 +1413,9 @@ int mmc_attach_sd(struct mmc_host *host)
 	if (err)
 		goto remove_card;
 
-	mmc_init_clk_scaling(host);
+	/* Initialize clock scaling only for high frequency modes */
+	if (mmc_card_uhs(host->card))
+		mmc_init_clk_scaling(host);
 
 	return 0;
 
