@@ -161,8 +161,16 @@ static int try_get_writer_sem(struct rw_semaphore *sem,
 
 try_again_write:
 	oldcount = rwsem_atomic_update(adjustment, sem) - adjustment;
-	if (!(oldcount & RWSEM_ACTIVE_MASK))
+	if (!(oldcount & RWSEM_ACTIVE_MASK)) {
+		/* No active lock: */
+		struct task_struct *tsk = waiter->task;
+
+		list_del(&waiter->list);
+		smp_mb();
+		put_task_struct(tsk);
+		tsk->state = TASK_RUNNING;
 		return 1;
+	}
 	/* some one grabbed the sem already */
 	if (rwsem_atomic_update(-adjustment, sem) & RWSEM_ACTIVE_MASK)
 		return 0;
@@ -212,10 +220,11 @@ struct rw_semaphore __sched *rwsem_down_read_failed(struct rw_semaphore *sem)
 }
 
 /*
- * wait until we successfully acquire the write lock
+ * wait for the write lock to be granted
  */
 struct rw_semaphore __sched *rwsem_down_write_failed(struct rw_semaphore *sem)
 {
+	enum rwsem_waiter_type type = RWSEM_WAITING_FOR_WRITE;
 	signed long adjustment = -RWSEM_ACTIVE_WRITE_BIAS;
 	struct rwsem_waiter waiter;
 	struct task_struct *tsk = current;
@@ -223,7 +232,8 @@ struct rw_semaphore __sched *rwsem_down_write_failed(struct rw_semaphore *sem)
 
 	/* set up my own style of waitqueue */
 	waiter.task = tsk;
-	waiter.type = RWSEM_WAITING_FOR_WRITE;
+	waiter.type = type;
+	get_task_struct(tsk);
 
 	raw_spin_lock_irq(&sem->wait_lock);
 	if (list_empty(&sem->wait_list))
@@ -245,20 +255,25 @@ struct rw_semaphore __sched *rwsem_down_write_failed(struct rw_semaphore *sem)
 		 adjustment == -RWSEM_ACTIVE_WRITE_BIAS)
 		sem = __rwsem_do_wake(sem, RWSEM_WAKE_READ_OWNED);
 
-	/* wait until we successfully acquire the lock */
+	raw_spin_unlock_irq(&sem->wait_lock);
+
+	/* wait to be given the lock */
 	while (true) {
 		set_task_state(tsk, TASK_UNINTERRUPTIBLE);
-
-		if (try_get_writer_sem(sem, &waiter))
+		if (!waiter.task)
 			break;
 
+		raw_spin_lock_irq(&sem->wait_lock);
+		/* Try to get the writer sem, may steal from the head writer: */
+		if (type == RWSEM_WAITING_FOR_WRITE)
+			if (try_get_writer_sem(sem, &waiter)) {
+				raw_spin_unlock_irq(&sem->wait_lock);
+				return sem;
+			}
 		raw_spin_unlock_irq(&sem->wait_lock);
 		schedule();
-		raw_spin_lock_irq(&sem->wait_lock);
 	}
 
-	list_del(&waiter.list);
-	raw_spin_unlock_irq(&sem->wait_lock);
 	tsk->state = TASK_RUNNING;
 
 	return sem;
