@@ -30,15 +30,12 @@ void __init_rwsem(struct rw_semaphore *sem, const char *name,
 
 EXPORT_SYMBOL(__init_rwsem);
 
-enum rwsem_waiter_type {
-	RWSEM_WAITING_FOR_WRITE,
-	RWSEM_WAITING_FOR_READ
-};
-
 struct rwsem_waiter {
 	struct list_head list;
 	struct task_struct *task;
-	enum rwsem_waiter_type type;
+	unsigned int flags;
+#define RWSEM_WAITING_FOR_READ	0x00000001
+#define RWSEM_WAITING_FOR_WRITE	0x00000002
 };
 
 /* Wake types for __rwsem_do_wake().  Note that RWSEM_WAKE_NO_ACTIVE and
@@ -68,7 +65,7 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wake_type)
 	signed long woken, loop, adjustment;
 
 	waiter = list_entry(sem->wait_list.next, struct rwsem_waiter, list);
-	if (waiter->type != RWSEM_WAITING_FOR_WRITE)
+	if (!(waiter->flags & RWSEM_WAITING_FOR_WRITE))
 		goto readers_only;
 
 	if (wake_type == RWSEM_WAKE_READ_OWNED)
@@ -115,10 +112,10 @@ __rwsem_do_wake(struct rw_semaphore *sem, int wake_type)
 		waiter = list_entry(waiter->list.next,
 					struct rwsem_waiter, list);
 
-	} while (waiter->type != RWSEM_WAITING_FOR_WRITE);
+	} while (waiter->flags & RWSEM_WAITING_FOR_READ);
 
 	adjustment = woken * RWSEM_ACTIVE_READ_BIAS;
-	if (waiter->type != RWSEM_WAITING_FOR_WRITE)
+	if (waiter->flags & RWSEM_WAITING_FOR_READ)
 		/* hit end of list above */
 		adjustment -= RWSEM_WAITING_BIAS;
 
@@ -151,7 +148,7 @@ static int try_get_writer_sem(struct rw_semaphore *sem,
 
 	/* only steal when first waiter is writing */
 	fwaiter = list_entry(sem->wait_list.next, struct rwsem_waiter, list);
-	if (fwaiter->type != RWSEM_WAITING_FOR_WRITE)
+	if (!(fwaiter->flags & RWSEM_WAITING_FOR_WRITE))
 		return 0;
 
 	adjustment = RWSEM_ACTIVE_WRITE_BIAS;
@@ -182,7 +179,7 @@ try_again_write:
  */
 static struct rw_semaphore __sched *
 rwsem_down_failed_common(struct rw_semaphore *sem,
-			 enum rwsem_waiter_type type, signed long adjustment)
+			 unsigned int flags, signed long adjustment)
 {
 	struct rwsem_waiter waiter;
 	struct task_struct *tsk = current;
@@ -193,7 +190,7 @@ rwsem_down_failed_common(struct rw_semaphore *sem,
 	/* set up my own style of waitqueue */
 	raw_spin_lock_irq(&sem->wait_lock);
 	waiter.task = tsk;
-	waiter.type = type;
+	waiter.flags = flags;
 	get_task_struct(tsk);
 
 	if (list_empty(&sem->wait_list))
@@ -224,7 +221,7 @@ rwsem_down_failed_common(struct rw_semaphore *sem,
 
 		raw_spin_lock_irq(&sem->wait_lock);
 		/* Try to get the writer sem, may steal from the head writer: */
-		if (type == RWSEM_WAITING_FOR_WRITE)
+		if (flags == RWSEM_WAITING_FOR_WRITE)
 			if (try_get_writer_sem(sem, &waiter)) {
 				raw_spin_unlock_irq(&sem->wait_lock);
 				return sem;
