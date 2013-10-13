@@ -141,7 +141,7 @@ static int sec_gpu_lock_control_proc(int bmax, long value, size_t count)
 
 static ssize_t get_dvfs_table(struct device *d, struct device_attribute *a, char *buf)
 {
-	return sprintf(buf, "%s", sgx_dvfs_table);
+	return sprintf(buf, "%s\n", sgx_dvfs_table);
 }
 static DEVICE_ATTR(sgx_dvfs_table, S_IRUGO | S_IRGRP | S_IROTH, get_dvfs_table, 0);
 
