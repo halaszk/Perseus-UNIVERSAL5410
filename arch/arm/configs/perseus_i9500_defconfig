@@ -1,19 +1,8 @@
-<<<<<<< HEAD
-# CONFIG_CROSS_COMPILE="/home/af/S4/Toolchains/gcc-linaro-arm-linux-gnueabihf-4.8-2013.05_linux/bin/arm-linux-gnueabihf-"
-# CONFIG_CROSS_COMPILE="/home/af/S4/arm-cortex_a15-linux-gnueabihf/bin/arm-cortex_a15-linux-gnueabihf-"
-CONFIG_CROSS_COMPILE="/home/af/S4/Toolchains/arm-eabi-4.6/bin/arm-eabi-"
-CONFIG_LOCALVERSION="-Perseus.Adonis-alpha5"
-=======
 CONFIG_CROSS_COMPILE="/home/af/S4/Toolchains/gcc-linaro-arm-linux-gnueabihf-4.8-2013.07-1_linux/bin/arm-linux-gnueabihf-"
 # CONFIG_CROSS_COMPILE="/home/af/S4/Toolchains/gcc-linaro-arm-linux-gnueabihf-4.7-2013.04-20130415_linux/bin/arm-linux-gnueabihf-"
 # CONFIG_CROSS_COMPILE="/home/af/S4/arm-cortex_a15-linux-gnueabihf/bin/arm-cortex_a15-linux-gnueabihf-"
 # CONFIG_CROSS_COMPILE="/home/af/S4/Toolchains/arm-eabi-4.6/bin/arm-eabi-"
-<<<<<<< HEAD
-CONFIG_LOCALVERSION="-Perseus.Adonis-alpha8"
->>>>>>> c7f008cba5be7dad57f1e4c8f8ce6c64b3453ab2
-=======
 CONFIG_LOCALVERSION="-Perseus.Adonis-alpha14"
->>>>>>> 0704aaa54efc0424fa8eb5018aadc50c833032b0
 # CONFIG_LOCALVERSION_AUTO is not set
 CONFIG_EXPERIMENTAL=y
 # CONFIG_KERNEL_GZIP is not set
@@ -22,11 +11,7 @@ CONFIG_KERNEL_XZ=y
 # CONFIG_KERNEL_LZO is not set
 CONFIG_SNAPPY=y
 CONFIG_SYSVIPC=y
-<<<<<<< HEAD
-CONFIG_COMPACTION=y
-=======
 # CONFIG_COMPACTION is not set
->>>>>>> c7f008cba5be7dad57f1e4c8f8ce6c64b3453ab2
 CONFIG_SWAP=y
 CONFIG_SWAP_DISABLE_RUNTIME_DISCARD=y
 CONFIG_ZSWAP=y
@@ -90,22 +75,12 @@ CONFIG_PREEMPT=y
 CONFIG_AEABI=y
 # CONFIG_OABI_COMPAT is not set
 CONFIG_HIGHMEM=y
-<<<<<<< HEAD
-<<<<<<< HEAD
-CONFIG_CMDLINE="console=ttySAC2,115200n8 vmalloc=512M androidboot.console=ttySAC2"
-CONFIG_CMDLINE="zswap.enabled=1 zswap.compressor=snappy"
-CONFIG_CMDLINE_FROM_BOOTLOADER=y
-# CONFIG_CMDLINE_EXTEND is not set
-=======
-=======
 CONFIG_COMPACTION=y
 CONFIG_MIGRATION=y
->>>>>>> 0704aaa54efc0424fa8eb5018aadc50c833032b0
 # CONFIG_CMDLINE="console=ttySAC2,115200n8 vmalloc=512M androidboot.console=ttySAC2"
 CONFIG_CMDLINE="zswap.enabled=0 zswap.compressor=snappy"
 CONFIG_CMDLINE_FROM_BOOTLOADER=y
 CONFIG_CMDLINE_EXTEND=y
->>>>>>> c7f008cba5be7dad57f1e4c8f8ce6c64b3453ab2
 CONFIG_CPU_FREQ=y
 CONFIG_CPU_FREQ_DEFAULT_GOV_ONDEMAND_SEC=y
 CONFIG_EXYNOS5_DYNAMIC_CPU_HOTPLUG=y

@@ -25,7 +25,8 @@ GCCVERSION_NEW=`${CROSS_COMPILE}gcc --version | cut -d " " -f4 | cut -c1-3 | gre
 
 
 NAMBEROFCPUS=`grep 'processor' /proc/cpuinfo | wc -l`
-echo "$NAMBEROFCPUS system CPU detected, setting $NAMBEROFCPUS build threads"
+NR_CPUS=$(expr `grep processor /proc/cpuinfo | wc -l`);
+echo "$NAMBEROFCPUS system CPU detected, setting $NR_CPUS build threads"
 
 INITRAMFS_TMP="/tmp/initramfs-source"
 
@@ -115,7 +116,7 @@ ${KERNELDIR}/mkshbootimg.py ${KERNELDIR}/boot.img ${KERNELDIR}/boot.img.pre ${KE
 rm -f ${KERNELDIR}/boot.img.pre
 
 	# copy all needed to ready kernel folder.
-cp ${KERNELDIR}/.config ${KERNELDIR}/arch/arm/configs/${KERNEL_CONFIG}
+cp ${KERNELDIR}/.config ${KERNELDIR}/arch/arm/configs/${KERNEL_CONFIG}_I9500
 cp ${KERNELDIR}/.config ${KERNELDIR}/READY/
 rm ${KERNELDIR}/READY/boot/zImage
 rm ${KERNELDIR}/READY/Kernel_*
