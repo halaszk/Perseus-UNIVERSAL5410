@@ -71,11 +71,11 @@ int sgx_dvfs_level = -1;
 /* this value is dvfs mode- 0: auto, others: custom lock */
 int sgx_dvfs_custom_clock;
 int sgx_dvfs_min_lock;
-int sgx_dvfs_max_lock;
+int sgx_dvfs_max_lock = 480;
 int sgx_dvfs_down_requirement;
 
 int custom_min_lock_level;
-int custom_max_lock_level;
+int custom_max_lock_level = 4;
 
 char sgx_dvfs_table_string[256]={0};
 char* sgx_dvfs_table;
@@ -173,7 +173,7 @@ static ssize_t set_max_clock(struct device *d, struct device_attribute *a, const
 		return -EINVAL;
 	return sec_gpu_lock_control_proc(1, value, count);
 }
-static DEVICE_ATTR(sgx_dvfs_max_lock, S_IRUGO | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH, get_max_clock, set_max_clock);
+static DEVICE_ATTR(sgx_dvfs_max_lock_, S_IRUGO | S_IWUSR | S_IRGRP | S_IWGRP | S_IROTH, get_max_clock, set_max_clock);
 
 static ssize_t volt_table_show(struct device *d, struct device_attribute *a, char *buf)
 {
@@ -256,7 +256,7 @@ void sec_gpu_dvfs_init(void)
 	/* Required name attribute */
 	if (device_create_file(&pdev->dev, &dev_attr_sgx_dvfs_min_lock) < 0)
 		PVR_LOG(("device_create_file: dev_attr_sgx_dvfs_min_lock fail"));
-	if (device_create_file(&pdev->dev, &dev_attr_sgx_dvfs_max_lock) < 0)
+	if (device_create_file(&pdev->dev, &dev_attr_sgx_dvfs_max_lock_) < 0)
 		PVR_LOG(("device_create_file: dev_attr_sgx_dvfs_max_lock fail"));
 	if (device_create_file(&pdev->dev, &dev_attr_sgx_dvfs_volt_table) < 0)
 		PVR_LOG(("device_create_file: dev_attr_sgx_dvfs_volt_table fail"));
