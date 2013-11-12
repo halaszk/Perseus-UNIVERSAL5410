@@ -103,14 +103,14 @@ fi;
 cd $INITRAMFS_TMP
 find | fakeroot cpio -H newc -o > $INITRAMFS_TMP.cpio 2>/dev/null
 ls -lh $INITRAMFS_TMP.cpio
-#lzma -kvzc $INITRAMFS_TMP.cpio > $INITRAMFS_TMP.cpio.lzma
-gzip -9 $INITRAMFS_TMP.cpio
+lzma -kvzc $INITRAMFS_TMP.cpio > $INITRAMFS_TMP.cpio.lzma
+#gzip -9 $INITRAMFS_TMP.cpio
 cd -
 
 # make kernel
 nice -n 10 make -j$NAMBEROFCPUS zImage || exit 1
 
-./mkbootimg --kernel ${KERNELDIR}/arch/arm/boot/zImage --ramdisk $INITRAMFS_TMP.cpio.gz --board universal5410 --base 0x10000000 --pagesize 2048 --ramdiskaddr 0x11000000 -o ${KERNELDIR}/boot.img.pre
+./mkbootimg --kernel ${KERNELDIR}/arch/arm/boot/zImage --ramdisk $INITRAMFS_TMP.cpio.lzma --board universal5410 --base 0x10000000 --pagesize 2048 --ramdiskaddr 0x11000000 -o ${KERNELDIR}/boot.img.pre
 
 ${KERNELDIR}/mkshbootimg.py ${KERNELDIR}/boot.img ${KERNELDIR}/boot.img.pre ${KERNELDIR}/payload.tar
 rm -f ${KERNELDIR}/boot.img.pre
