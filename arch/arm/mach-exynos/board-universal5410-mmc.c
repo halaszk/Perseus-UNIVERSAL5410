@@ -557,7 +557,6 @@ static struct dw_mci_board universal5410_dwmci2_pdata __initdata = {
 	.bus_hz			= 160 * 1000 * 1000,
 	.caps			= MMC_CAP_CMD23 | MMC_CAP_4_BIT_DATA |
             		  MMC_CAP_UHS_SDR25 | MMC_CAP_UHS_SDR50 | MMC_CAP_UHS_SDR104 |
-            		  MMC_CAP_1_8V_DDR | MMC_CAP_UHS_DDR50 |
             		  MMC_CAP_ERASE,
 	.fifo_depth		= 0x80,
 	.detect_delay_ms	= 200,
